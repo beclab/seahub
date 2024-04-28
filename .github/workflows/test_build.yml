@@ -1,0 +1,205 @@
+name: Seahub Build CI
+
+on: 
+#  push:
+#    branches:
+#      - master
+  workflow_dispatch:
+
+env:
+#   # registry: my_registry_name
+#   # Not sure these are actually being passed down to rails, set them as the default in database.yml
+#   DB_HOST: 127.0.0.1
+#   DB_USERNAME: root
+#   DB_PASSWORD: ${{ secrets.MARIADB_ROOT_PASSWORD }}
+    PYTHONPATH: /usr/local/lib/python3.11/site-packages/:~/seahub/thirdpart
+    CCNET_CONF_DIR: ~/dev/conf
+    SEAFILE_CONF_DIR: ~/dev/seafile-data
+    SEAFILE_CENTRAL_CONF_DIR: ~/dev/conf
+
+jobs:
+  test_build:
+    runs-on: ubuntu-latest
+    # services:
+    #   mariadb:
+    #     image: mariadb:latest
+    #     env:
+    #         MARIADB_USER: root
+    #         MARIADB_PASSWORD: ${{ secrets.MARIADB_PASSWORD }}
+    #         MARIADB_ROOT_PASSWORD: ${{ secrets.MARIADB_ROOT_PASSWORD }}
+    #     ports:
+    #       - 3306:3306
+
+    steps:
+        - name: show envs
+          run: env
+
+        - name: install packages
+          run: |
+            sudo apt-get install -y ssh libevent-dev libcurl4-openssl-dev libglib2.0-dev uuid-dev intltool 
+            sudo apt-get install -y libsqlite3-dev libmysqlclient-dev libarchive-dev libtool libjansson-dev valac libfuse-dev
+            sudo apt-get install -y cmake re2c flex sqlite3 python-pip git libssl-dev libldap2-dev libonig-dev vim vim-scripts
+            sudo apt-get install -y wget gcc autoconf automake mysql-client librados-dev libxml2-dev curl telnet
+            sudo apt-get install -y netcat unzip netbase ca-certificates apt-transport-https build-essential libxslt1-dev libffi-dev
+            sudo apt-get install -y libpcre3-dev zlib1g-dev xz-utils nginx pkg-config poppler-utils libmemcached-dev libjwt-dev
+            curl -sL https://deb.nodesource.com/setup_16.x | sudo -E bash -
+            sudo apt-get install -y nodejs
+
+        - name: install python
+          uses: actions/setup-python@v4
+          with:
+            python-version: "3.8"
+        
+        - name: clone dependencies in a given dir
+          run: |
+            cd ~/
+            mkdir -p ~/dev/source-code
+            cd ~/dev/source-code
+            
+            git clone https://github.com/haiwen/libevhtp.git
+            git clone https://github.com/haiwen/libsearpc.git
+            git clone https://github.com/lovehunter9/seafile-server.git
+
+        - name: compile libevhtp
+          run: |
+            cd ~/dev/source-code/libevhtp
+            cmake -DEVHTP_DISABLE_SSL=ON -DEVHTP_BUILD_SHARED=OFF .
+            make
+            sudo make install
+            sudo ldconfig
+        
+        - name: compile libsearpc
+          run: |
+            cd ~/dev/source-code/libsearpc
+            ./autogen.sh
+            ./configure
+            make
+            sudo make install
+            sudo ldconfig
+
+        - name: compile seafile-server
+          run: |
+            cd ~/dev/source-code/seafile-server
+            ./autogen.sh
+            ./configure --disable-fuse
+            make
+            sudo make install
+            sudo ldconfig
+
+        - name: create config files
+          run: |
+            mkdir ~/dev/conf
+            cd ~/dev/conf
+
+            cat > ccnet.conf  <<EOF
+            [Database]
+            ENGINE = mysql
+            HOST = 127.0.0.1
+            PORT = 3306
+            USER = root
+            PASSWD = ${{ secrets.MARIADB_PASSWORD }}
+            DB = ccnet
+            CONNECTION_CHARSET = utf8
+            CREATE_TABLES = true
+
+            [General]
+            SERVICE_URL = http://127.0.0.1:8000
+            EOF
+
+            cat > seahub_settings.py  <<EOF
+            DATABASES = {
+                'default': {
+                    'ENGINE': 'django.db.backends.mysql',
+                    'NAME': 'seahub',
+                    'USER': 'root',
+                    'PASSWORD': '${{ secrets.MARIADB_PASSWORD }}',
+                    'HOST': '127.0.0.1',
+                    'PORT': '3306',
+                }
+            }
+            FILE_SERVER_ROOT = 'http://127.0.0.1:8082'
+
+            import os
+            PROJECT_ROOT = $GITHUB_WORKSPACE # '~/dev/source-code/seahub'
+            WEBPACK_LOADER = {
+                'DEFAULT': {
+                    'BUNDLE_DIR_NAME': 'frontend/',
+                    'STATS_FILE': os.path.join(PROJECT_ROOT,
+                                              'frontend/webpack-stats.dev.json'),
+                }
+            }
+            DEBUG = True
+            EOF
+
+
+            mkdir ~/dev/seafile-data
+            cd ~/dev/seafile-data
+
+            cat > seafile.conf  <<EOF
+            [database]
+            type = mysql
+            host = 127.0.0.1
+            port = 3306
+            user = root
+            password = ${{ secrets.MARIADB_PASSWORD }}
+            db_name = seafile
+            connection_charset = utf8
+            create_tables = true
+            EOF
+
+        - name: try to run
+          run: |
+            sudo service mysql start
+            # mysqladmin -u root password ${{ secrets.MARIADB_PASSWORD }}
+            seaf-server -c ~/dev/conf -d ~/dev/seafile-data -D all -f -l - &
+
+        - name: checkout
+          uses: actions/checkout@v3
+        
+        - name: npm 
+          run: |
+            cd frontend
+            npm install
+            # npm install caniuse-lite chart.js@^3.9.1 react-chartjs-2@^4.3.1 --legacy-peer-deps --save-dev
+            npm run build
+            npm run dev
+        
+        - name: checkout
+          if: ${{ always() }}
+          uses: actions/checkout@v3
+
+        - name: python
+          if: ${{ always() }}
+          run: |
+            pip install virtualenv
+            virtualenv .virtualenv
+            . .virtualenv/bin/activate
+            pip install -r requirements.txt
+            # python manage.py migrate
+            python manage.py runserver 0.0.0.0:8000
+        
+
+        # - name: Archive code coverage results
+        #   uses: actions/upload-artifact@v3
+        #   with:
+        #     name: sea-server
+        #     path: server/seaf-server
+        
+        # - name: Download a single artifact
+        #   uses: actions/download-artifact@v3
+        #   with:
+        #     name: sea-server
+        #     path: ~/dev/sea-server
+
+        # - name: try to run downloaded artifact
+        #   run: |
+        #     cd ~/dev/sea-server
+        #     ls -af
+        #     chmod +x seaf-server
+        #     ./seaf-server -c ~/dev/conf -d ~/dev/seafile-data -D all -f -l - &
+  
+        # - name: install dependencies and test
+        #   run: |
+        #     cd $GITHUB_WORKSPACE
+        #     ./ci/install-deps.sh
+        #     ./ci/run.py

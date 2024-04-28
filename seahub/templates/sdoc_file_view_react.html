@@ -1,0 +1,21 @@
+{% extends 'file_view_react.html' %}
+{% load render_bundle from webpack_loader %}
+{% load seahub_tags %}
+
+{% block extra_style %}
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}sdoc-editor/sdoc-editor-font.css" />
+{% render_bundle 'viewFileSdoc' 'css' %}
+{% endblock %}
+
+{% block extra_data %}
+docPath: '{{ path|escapejs }}',
+docName: '{{ filename|escapejs }}',
+docUuid: '{{ file_uuid }}',
+assetsUrl: '{{ assets_url }}',
+seadocAccessToken: '{{ seadoc_access_token }}',
+seadocServerUrl: '{{ seadoc_server_url }}',
+{% endblock %}
+
+{% block render_bundle %}
+{% render_bundle 'viewFileSdoc' 'js' %}
+{% endblock %}

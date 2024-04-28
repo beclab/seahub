@@ -1,0 +1,18 @@
+FROM ubuntu:latest
+MAINTAINER wangrongxiang
+
+ENV NODE_OPTIONS="--openssl-legacy-provider"
+RUN apt-get -y update && \
+    apt-get -y upgrade && \
+    apt-get install -y curl sudo && \
+    curl -sL https://deb.nodesource.com/setup_18.x | sudo -E bash - && \
+    sudo apt-get install -y nodejs
+WORKDIR /root/dev/source-code/seahub
+COPY . ./
+COPY ./config_files /root/dev
+WORKDIR /root/dev/source-code/seahub/frontend
+RUN npm install @babel/plugin-proposal-private-property-in-object caniuse-lite chart.js@^3.9.1 react-chartjs-2@^4.3.1 --legacy-peer-deps --save-dev &&\
+    npm run build
+EXPOSE 3000
+
+ENTRYPOINT ["npm", "run", "dev"]

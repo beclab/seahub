@@ -1,0 +1,69 @@
+FROM ubuntu:20.04
+MAINTAINER wangrongxiang
+
+ARG DEBIAN_FRONTEND=noninteractive
+ENV TZ=Asia/Shanghai
+ENV NODE_OPTIONS="--openssl-legacy-provider"
+
+RUN apt-get -y update && \
+    apt-get install -y --no-install-recommends tzdata && \
+    apt-get install -y --no-install-recommends curl sudo && \
+    apt-get install -y --no-install-recommends libevent-dev libcurl4-openssl-dev libglib2.0-dev uuid-dev intltool && \
+    apt-get install -y --no-install-recommends libsqlite3-dev libmysqlclient-dev libarchive-dev libtool libjansson-dev valac libfuse-dev && \
+    apt-get install -y --no-install-recommends cmake re2c flex sqlite3 git libssl-dev libonig-dev libldap2-dev ldap-utils && \
+    apt-get install -y --no-install-recommends gcc autoconf automake mysql-client librados-dev libxml2-dev telnet && \
+    apt-get install -y --no-install-recommends netcat netbase ca-certificates apt-transport-https build-essential libxslt1-dev libffi-dev && \
+    apt-get install -y --no-install-recommends libpcre3-dev zlib1g-dev xz-utils pkg-config poppler-utils libmemcached-dev libjwt-dev && \
+    curl -sL https://deb.nodesource.com/setup_18.x | sudo -E bash - && \
+    apt-get install -y --no-install-recommends nodejs && \
+    apt-get install -y --no-install-recommends python3-pip python3-dev && \
+    apt-get install -y --no-install-recommends libsasl2-dev slapd tox lcov valgrind && \
+    apt-get install -y --no-install-recommends libpq-dev postgresql-client && \
+    apt-get autoremove && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /root/dev/source-code
+RUN git config --global http.sslverify false && \
+    git config --global https.sslverify false && \
+    git clone https://github.com/haiwen/libevhtp.git /root/dev/source-code/libevhtp && \
+    git clone https://github.com/haiwen/libsearpc.git /root/dev/source-code/libsearpc && \
+    git clone https://github.com/Above-Os/seafile-server.git /root/dev/source-code/seafile-server
+
+WORKDIR libevhtp
+RUN cmake -DEVHTP_DISABLE_SSL=ON -DEVHTP_BUILD_SHARED=OFF . && make && sudo make install && sudo ldconfig
+
+WORKDIR ../libsearpc
+RUN ./autogen.sh && ./configure && make && sudo make install && sudo ldconfig
+
+WORKDIR ../seafile-server
+RUN git checkout pgsql && ./autogen.sh && ./configure --disable-fuse && make && sudo make install && sudo ldconfig && rm -rf /root/dev/source-code
+
+WORKDIR /root/dev/source-code
+RUN rm -rf libevhtp && \
+    rm -rf libsearpc && \
+    rm -rf seafile-server
+
+WORKDIR /root/dev/source-code/seahub
+COPY . ./
+
+WORKDIR /root/dev/source-code/seahub/frontend
+RUN npm install @babel/plugin-proposal-private-property-in-object caniuse-lite chart.js@^3.9.1 react-chartjs-2@^4.3.1 --legacy-peer-deps && \
+    npm run build && \
+    rm -rf /root/dev/source-code/seahub/frontend/node_modules
+
+WORKDIR /root/dev/source-code/seahub
+
+ENV PYTHONPATH=/usr/local/lib/python3.8/site-packages/:/root/dev/source-code/seahub/thirdpart
+ENV CCNET_CONF_DIR=/root/dev/conf
+ENV SEAFILE_CONF_DIR=/root/dev/seafile-data
+ENV SEAFILE_CENTRAL_CONF_DIR=/root/dev/conf
+
+RUN pip install -r requirements.txt && \
+    pip install django-cors-headers && \
+    pip install psycopg2 && \
+    chmod +x ./docker.sh
+
+EXPOSE 8082
+EXPOSE 8000
+
+ENTRYPOINT ["./docker.sh"]

@@ -1,0 +1,71 @@
+FROM ubuntu:20.04
+MAINTAINER wangrongxiang
+
+ARG DEBIAN_FRONTEND=noninteractive
+ENV TZ=Asia/Shanghai
+ENV NODE_OPTIONS="--openssl-legacy-provider"
+
+RUN apt-get -y update && \
+    apt-get -y upgrade && \
+    apt-get install -y tzdata && \
+    apt-get install -y curl sudo && \
+    sudo apt-get install -y ssh libevent-dev libcurl4-openssl-dev libglib2.0-dev uuid-dev intltool && \
+    sudo apt-get install -y libsqlite3-dev libmysqlclient-dev libarchive-dev libtool libjansson-dev valac libfuse-dev && \
+    sudo apt-get install -y cmake re2c flex sqlite3 git libssl-dev libldap2-dev libonig-dev vim vim-scripts && \
+    sudo apt-get install -y wget gcc autoconf automake mysql-client librados-dev libxml2-dev curl telnet && \
+    sudo apt-get install -y netcat unzip netbase ca-certificates apt-transport-https build-essential libxslt1-dev libffi-dev && \
+    sudo apt-get install -y libpcre3-dev zlib1g-dev xz-utils nginx pkg-config poppler-utils libmemcached-dev libjwt-dev && \
+    curl -sL https://deb.nodesource.com/setup_18.x | sudo -E bash - && \
+    sudo apt-get install -y nodejs && \
+    sudo apt-get install -y python3-pip python3 python3-dev && \
+    sudo python3 -m pip install --upgrade pip && \
+    pip install python-cas djangosaml2 cffi sqlalchemy pymysql pillow pycryptodome configparser pylibmc django-pylibmc elasticsearch==5.5.0 elasticsearch-dsl==5.4.0 Django==2.2.14 future captcha django-statici18n django-post_office==3.3.0 django-webpack_loader==0.7.0 gunicorn mysqlclient django-picklefield==2.1.1 openpyxl qrcode django-formtools django-simple-captcha djangorestframework==3.11.1 python-dateutil requests pillow pyjwt pycryptodome requests_oauthlib mock nose exam splinter pytest pytest-django
+
+WORKDIR /root/dev/source-code
+COPY . /root/dev/source-code/seahub
+COPY ./config_files /root/dev
+RUN git clone https://github.com/haiwen/libevhtp.git /root/dev/source-code/libevhtp && \
+    git clone https://github.com/haiwen/libsearpc.git /root/dev/source-code/libsearpc && \
+    git clone https://github.com/lovehunter9/seafile-server.git /root/dev/source-code/seafile-server
+
+WORKDIR libevhtp
+RUN cmake -DEVHTP_DISABLE_SSL=ON -DEVHTP_BUILD_SHARED=OFF . && make && sudo make install && sudo ldconfig
+
+WORKDIR ../libsearpc
+RUN ./autogen.sh && ./configure && make && sudo make install && sudo ldconfig
+
+WORKDIR ../seafile-server
+RUN ./autogen.sh && ./configure --disable-fuse && make && sudo make install && sudo ldconfig
+
+WORKDIR /root/dev/source-code/seahub
+COPY . ./
+COPY ./config_files /root/dev
+
+WORKDIR /root/dev/source-code/seahub/frontend
+RUN npm install @babel/plugin-proposal-private-property-in-object caniuse-lite chart.js@^3.9.1 react-chartjs-2@^4.3.1 --legacy-peer-deps --save-dev && \
+    npm run build && \
+    npm install -g live-server
+
+WORKDIR /root/dev/source-code/seahub
+RUN apt-get install -y build-essential python3-dev libldap2-dev libsasl2-dev slapd ldap-utils tox lcov valgrind && \
+    pip install virtualenv && \
+    virtualenv env
+ENV VIRTUAL_ENV env                     # activating environment
+ENV PATH env/bin:$PATH                  # activating environment
+
+ENV PYTHONPATH=/usr/local/lib/python3.8/site-packages/:/root/dev/source-code/seahub/thirdpart:$PYTHONPATH
+ENV CCNET_CONF_DIR=/root/dev/conf
+ENV SEAFILE_CONF_DIR=/root/dev/seafile-data
+ENV SEAFILE_CENTRAL_CONF_DIR=/root/dev/conf
+
+RUN pip install --upgrade pip && \
+    pip install -r requirements.txt && \
+    pip install python-ldap
+
+EXPOSE 8082
+EXPOSE 8000
+EXPOSE 3000
+
+#ENTRYPOINT ["env/bin/python", "manage.py", "runserver", "0.0.0.0:8000"]
+RUN chmod +x ./docker.sh
+ENTRYPOINT ["./docker.sh"]
