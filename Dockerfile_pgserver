@@ -27,7 +27,7 @@ RUN git config --global http.sslverify false && \
     git config --global https.sslverify false && \
     git clone https://github.com/haiwen/libevhtp.git /root/dev/source-code/libevhtp && \
     git clone https://github.com/haiwen/libsearpc.git /root/dev/source-code/libsearpc && \
-    git clone https://github.com/Above-Os/seafile-server.git /root/dev/source-code/seafile-server
+    git clone https://github.com/beclab/seafile-server.git /root/dev/source-code/seafile-server
 
 WORKDIR libevhtp
 RUN cmake -DEVHTP_DISABLE_SSL=ON -DEVHTP_BUILD_SHARED=OFF . && make && sudo make install && sudo ldconfig

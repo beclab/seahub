@@ -55,7 +55,7 @@ seahub/thumbnail/thumb/*
 .dumbjump
 .projectile
 .pytest_cache/
-tags
+#tags
 
 frontend/webpack-stats.dev.json
 frontend/node_modules
