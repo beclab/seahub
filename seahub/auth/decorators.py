@@ -9,6 +9,10 @@ from django.http import HttpResponseRedirect, HttpResponse, Http404
 from urllib.parse import quote
 import json
 from django.utils.translation import gettext as _
+from .utils import find_request_user
+import logging, traceback
+
+logger = logging.getLogger(__name__)
 
 def user_passes_test(test_func, login_url=None, redirect_field_name=REDIRECT_FIELD_NAME):
     """
@@ -22,8 +26,22 @@ def user_passes_test(test_func, login_url=None, redirect_field_name=REDIRECT_FIE
 
     def decorator(view_func):
         def _wrapped_view(request, *args, **kwargs):
+            try:
+                logger.info(f"request.user: {request.user.username}")
+            except:
+                traceback.print_exc()
+
+            if not request.user.username:
+                logger.info("Request.user not found, we'll get it!")
+                request.user = find_request_user(request)
+                try:
+                    logger.info(f"request.user: {request.user.username}")
+                except:
+                    traceback.print_exc()
+
             if test_func(request.user):
                 return view_func(request, *args, **kwargs)
+            logger.info("No request.user!")
             path = quote(request.get_full_path())
             tup = login_url, redirect_field_name, path
             return HttpResponseRedirect('%s?%s=%s' % tup)

@@ -8,6 +8,7 @@ from seahub.profile.models import Profile
 from seaserv import seafile_api, ccnet_api
 from seahub.base.templatetags.seahub_tags import email2nickname, email2contact_email
 from seahub.views import create_default_library
+# from seahub.auth.utils import list_all_users
 
 
 logger = logging.getLogger(__name__)

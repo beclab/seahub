@@ -7,6 +7,8 @@ from rest_framework.exceptions import APIException
 
 from seaserv import ccnet_api
 
+from seahub.api2.endpoints.callback import list_all_users
+# from seahub.auth.utils import list_all_users
 from seahub.auth.models import AnonymousUser
 from seahub.base.accounts import User
 from seahub.api2.models import Token, TokenV2
@@ -51,23 +53,53 @@ class TokenAuthentication(BaseAuthentication):
     """
 
     def authenticate(self, request):
-        auth = request.headers.get('authorization', '').split()
-        if not auth or auth[0].lower() != 'token':
-            return None
+        # auth = request.headers.get('authorization', '').split()
+        # if not auth or auth[0].lower() != 'token':
+        #     return None
+        #
+        # if len(auth) == 1:
+        #     msg = 'Invalid token header. No credentials provided.'
+        #     raise AuthenticationFailed(msg)
+        # elif len(auth) > 2:
+        #     msg = 'Invalid token header. Token string should not contain spaces.'
+        #     raise AuthenticationFailed(msg)
+        #
+        # key = auth[1]
+        # ret = self.authenticate_v2(request, key)
+        # if ret:
+        #     return ret
+        #
+        # return self.authenticate_v1(request, key)
 
-        if len(auth) == 1:
-            msg = 'Invalid token header. No credentials provided.'
-            raise AuthenticationFailed(msg)
-        elif len(auth) > 2:
-            msg = 'Invalid token header. Token string should not contain spaces.'
-            raise AuthenticationFailed(msg)
+        try:
+            user_header = request.headers.get('X-Bfl-User', '')
+            if not user_header:
+                raise IndexError
 
-        key = auth[1]
-        ret = self.authenticate_v2(request, key)
-        if ret:
-            return ret
+            username = user_header + "@seafile.com"
+            logger.info(f"username: {username}")
 
-        return self.authenticate_v1(request, key)
+            all_users = list_all_users()
+            logger.info(f"all_users: {all_users}")
+            existed_user = all_users.get(username)
+            if existed_user and existed_user.get("email"):
+                logger.info(f"Contact Email {username} with Virtual Email {existed_user['email']} exists!")
+            else:
+                logger.info(f"Contact Email {username} with Virtual Email {existed_user['email']} doesn't exist!")
+                raise User.DoesNotExist
+
+            virtual_email = existed_user.get("email")
+            user = User.objects.get(email=virtual_email)
+            if user:
+                logger.info(f"User existed_user_email {virtual_email} found.")
+                return (user, None)
+            raise AuthenticationFailed
+        except User.DoesNotExist:
+            logger.info("User not found.")
+            raise exceptions.AuthenticationFailed('User not found.')
+        except IndexError:
+            logger.info("Invalid header format.")
+            raise exceptions.AuthenticationFailed('Invalid header format.')
 
     def authenticate_v1(self, request, key):
         try:

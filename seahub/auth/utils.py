@@ -6,7 +6,66 @@ from seahub.profile.models import Profile
 from seahub.utils import normalize_cache_key
 from seahub.utils.ip import get_remote_ip
 
+import logging
+
+from seahub.base.accounts import User
+from seaserv import seafile_api, ccnet_api
+from seahub.base.templatetags.seahub_tags import email2nickname, email2contact_email
+
 LOGIN_ATTEMPT_PREFIX = 'UserLoginAttempt_'
+
+logger = logging.getLogger(__name__)
+
+
+def list_all_users():
+    total_count = ccnet_api.count_emailusers('DB') + \
+                      ccnet_api.count_inactive_emailusers('DB')
+
+    users = ccnet_api.get_emailusers('DB', 0, total_count)
+
+    data = {}
+    for user in users:
+        profile = Profile.objects.get_profile_by_user(user.email)
+
+        info = {}
+        info['email'] = user.email
+        info['name'] = email2nickname(email2contact_email(user.email))
+        info['contact_email'] = email2contact_email(user.email)
+        info['login_id'] = profile.login_id if profile and profile.login_id else ''
+
+        info['is_staff'] = user.is_staff
+        info['is_active'] = user.is_active
+
+        data[info['contact_email']] = info
+
+    # result = {'data': data, 'total_count': total_count}
+    logger.info(str(data))
+    return data
+
+def find_request_user(request):
+    user_header = request.headers.get('X-Bfl-User')
+    if user_header and user_header.strip():
+        username = user_header + "@seafile.com"
+        logger.info(f"username: {username}")
+
+        all_users = list_all_users()
+        logger.info(f"all_users: {all_users}")
+        existed_user = all_users.get(username)
+        if existed_user and existed_user.get("email"):
+            logger.info(f"Contact Email {username} with Virtual Email {existed_user['email']} exists!")
+        else:
+            logger.info(f"Contact Email {username} with Virtual Email {existed_user['email']} doesn't exist!")
+
+        virtual_email = existed_user.get("email")
+        try:
+            user = User.objects.get(email=virtual_email)
+            if user:
+                logger.info(f"User existed_user_email {virtual_email} found.")
+                return user
+        except User.DoesNotExist:
+            logger.info(f"User does not exist.")
+    return None
+
 
 
 def get_login_failed_attempts(username=None, ip=None):
