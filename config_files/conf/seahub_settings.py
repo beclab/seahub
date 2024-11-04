@@ -26,4 +26,4 @@ CSRF_TRUSTED_ORIGINS = ['https://seafile.liuy102.snowinning.com']
 ENABLE_ONLYOFFICE = True
 ONLYOFFICE_APIJS_URL = 'http://onlyoffice.onlyoffice-wangrongxiang2:3030/web-apps/apps/api/documents/api.js' # 'http://seafile.example.com:6233/web-apps/apps/api/documents/api.js'
 ONLYOFFICE_FILE_EXTENSION = ('doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'odt', 'fodt', 'odp', 'fodp', 'ods', 'fods', 'csv', 'ppsx', 'pps')
-ONLYOFFICE_JWT_SECRET = 'TkZoOUZrSG8='
+ONLYOFFICE_JWT_SECRET = 'N21HeGlxQlQ='
