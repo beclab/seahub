@@ -23,6 +23,7 @@ DEBUG = True
 
 CSRF_TRUSTED_ORIGINS = ['https://seafile.liuy102.snowinning.com']
 
+# just for show in code, efficiency in config-map in k8s
 ENABLE_ONLYOFFICE = True
 ONLYOFFICE_APIJS_URL = 'http://onlyoffice.onlyoffice-wangrongxiang2/web-apps/apps/api/documents/api.js' # 'http://seafile.example.com:6233/web-apps/apps/api/documents/api.js'
 ONLYOFFICE_FILE_EXTENSION = ('doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'odt', 'fodt', 'odp', 'fodp', 'ods', 'fods', 'csv', 'ppsx', 'pps')

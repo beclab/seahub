@@ -500,7 +500,8 @@ def view_lib_file(request, repo_id, path):
 
     # download file or view raw file
     filename = os.path.basename(path)
-    dl = request.GET.get('dl', '0') == '1'
+    # temp for onlyoffice by wrx
+    dl = False  # request.GET.get('dl', '0') == '1'
     raw = request.GET.get('raw', '0') == '1'
     if dl or raw:
         if parse_repo_perm(permission).can_download is False:
