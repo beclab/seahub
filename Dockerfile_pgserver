@@ -61,7 +61,7 @@ ENV TZ=Asia/Shanghai
 #apt-get install -y --no-install-recommends build-essential libldap2-dev libsasl2-dev libssl-dev libmysqlclient-dev default-libmysqlclient-dev && \
 RUN apt-get -y update && \
     apt-get install -y --no-install-recommends tzdata && \
-    apt-get install -y --no-install-recommends libevent-dev sudo libglib2.0-dev libjansson-dev libarchive-dev && \
+    apt-get install -y --no-install-recommends libevent-dev sudo curl libglib2.0-dev libjansson-dev libarchive-dev && \
     apt-get install -y --no-install-recommends libcurl4-openssl-dev libjwt-dev && \
     apt-get install -y --no-install-recommends python3-pip python3-dev && \
     apt-get install -y --no-install-recommends build-essential libldap2-dev libsasl2-dev libssl-dev libmysqlclient-dev && \
