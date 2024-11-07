@@ -916,7 +916,7 @@ if getattr(settings, 'ENABLE_MULTI_ADFS', False) or getattr(settings, 'ENABLE_AD
         path('saml2/complete/', auth_complete, name='saml2_complete'),
     ]
 
-if True: # getattr(settings, 'ENABLE_ONLYOFFICE', False):
+if getattr(settings, 'ENABLE_ONLYOFFICE', False):
     from seahub.onlyoffice.views import onlyoffice_editor_callback
     from seahub.onlyoffice.views import OnlyofficeConvert
     urlpatterns += [
