@@ -13,8 +13,8 @@ PROJECT_ROOT = os.path.join(os.path.dirname(__file__), os.pardir)
 
 DEBUG = False
 
-SERVICE_URL = '/'
-FILE_SERVER_ROOT = '/seafhttp'
+SERVICE_URL = 'https://files.wangrongxiang2.myterminus.com/seahub/'     # '/'
+FILE_SERVER_ROOT = 'https://files.wangrongxiang2.myterminus.com/seafhttp/'      # '/seafhttp'
 # FILE_SERVER_ROOT = 'http://127.0.0.1:' + FILE_SERVER_PORT
 
 CLOUD_MODE = False
