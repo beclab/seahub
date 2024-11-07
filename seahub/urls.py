@@ -920,8 +920,8 @@ if getattr(settings, 'ENABLE_ONLYOFFICE', False):
     from seahub.onlyoffice.views import onlyoffice_editor_callback
     from seahub.onlyoffice.views import OnlyofficeConvert
     urlpatterns += [
-        path('seahub/onlyoffice/editor-callback/', onlyoffice_editor_callback, name='onlyoffice_editor_callback'),
-        path('seahub/onlyoffice-api/convert/', OnlyofficeConvert.as_view(), name='onlyoffice_api_convert'),
+        path('sync-onlyoffice/onlyoffice/editor-callback/', onlyoffice_editor_callback, name='onlyoffice_editor_callback'),
+        path('sync-onlyoffice/onlyoffice-api/convert/', OnlyofficeConvert.as_view(), name='onlyoffice_api_convert'),
     ]
 
 if getattr(settings, 'ENABLE_BISHENG_OFFICE', False):
