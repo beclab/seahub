@@ -186,6 +186,14 @@ def get_fileserver_root():
     """
     return config.FILE_SERVER_ROOT
 
+def get_fileserver_root_onlyoffice():
+    """ Construct seafile fileserver address and port.
+
+    Returns:
+    	Constructed fileserver root.
+    """
+    return config.ONLYOFFICE_FILE_SERVER_ROOT
+
 def get_inner_fileserver_root():
     """Construct inner seafile fileserver address and port.
 
@@ -506,6 +514,13 @@ def gen_file_get_url(token, filename):
     Format: http://<domain:port>/files/<token>/<filename>
     """
     return '%s/files/%s/%s' % (get_fileserver_root(), token, quote(filename))
+
+def gen_file_get_url_onlyoffice(token, filename):
+    """
+    Generate fileserver file url.
+    Format: http://<domain:port>/files/<token>/<filename>
+    """
+    return '%s/files/%s/%s' % (get_fileserver_root_onlyoffice(), token, quote(filename))
 
 def gen_file_upload_url(token, op, replace=False):
     url = '%s/%s/%s' % (get_fileserver_root(), op, token)
