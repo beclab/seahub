@@ -11,7 +11,7 @@ from seaserv import seafile_api
 
 from seahub.base.templatetags.seahub_tags import email2nickname, email2contact_email
 from seahub.utils import get_file_type_and_ext, gen_file_get_url, \
-        get_site_scheme_and_netloc
+        get_site_scheme_and_netloc_onlyoffice
 
 from seahub.onlyoffice.models import OnlyOfficeDocKey
 
@@ -137,7 +137,7 @@ def get_onlyoffice_dict(request, username, repo_id, file_path, file_id='',
     file_name = os.path.basename(file_path.rstrip('/'))
     doc_url = gen_file_get_url(dl_token, file_name)
 
-    base_url = get_site_scheme_and_netloc()
+    base_url = get_site_scheme_and_netloc_onlyoffice()
     logger.info(f"base_url={base_url}")
     onlyoffice_editor_callback_url = reverse('onlyoffice_editor_callback')
     logger.info(f"onlyoffice_editor_callback_url={onlyoffice_editor_callback_url}")

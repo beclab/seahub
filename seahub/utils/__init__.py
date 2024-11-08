@@ -959,6 +959,11 @@ def get_service_url():
     """
     return config.SERVICE_URL
 
+def get_service_url_onlyoffice():
+    """Get service url from seaserv.
+    """
+    return config.ONLYOFFICE_SERVICE_URL
+
 def get_webdav_url():
     """Get webdav url.
     """
@@ -1001,6 +1006,18 @@ def get_site_scheme_and_netloc():
 
     """
     parse_result = urlparse(get_service_url())
+    return "%s://%s" % (parse_result.scheme, parse_result.netloc)
+
+def get_site_scheme_and_netloc_onlyoffice():
+    """Return a string contains site scheme and network location part from
+    service url.
+
+    For example:
+    >>> get_site_scheme_and_netloc("https://example.com:8000/seafile/")
+    https://example.com:8000
+
+    """
+    parse_result = urlparse(get_service_url_onlyoffice())
     return "%s://%s" % (parse_result.scheme, parse_result.netloc)
 
 def get_site_name():
