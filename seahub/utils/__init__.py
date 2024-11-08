@@ -190,7 +190,7 @@ def get_fileserver_root_onlyoffice():
     """ Construct seafile fileserver address and port.
 
     Returns:
-    	Constructed fileserver root.
+        Constructed fileserver root.
     """
     return config.ONLYOFFICE_FILE_SERVER_ROOT
 
