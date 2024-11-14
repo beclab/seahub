@@ -123,7 +123,8 @@ def get_onlyoffice_dict(request, username, repo_id, file_path, file_id='',
     if not can_edit:
         doc_key = generate_onlyoffice_doc_key(origin_repo_id, origin_file_path, file_id)
     else:
-        doc_key = get_doc_key_by_repo_id_file_path(origin_repo_id, origin_file_path)
+        doc_key = generate_onlyoffice_doc_key(origin_repo_id, origin_file_path, file_id)    # try by wrx
+        # doc_key = get_doc_key_by_repo_id_file_path(origin_repo_id, origin_file_path)
         if doc_key:
             logger.info('get doc_key {} from database by repo_id {} file_path {}'.format(doc_key,
                                                                                          origin_repo_id,
