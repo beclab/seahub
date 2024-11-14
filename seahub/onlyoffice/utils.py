@@ -38,7 +38,7 @@ def generate_onlyoffice_doc_key(repo_id, file_path, file_id):
 def get_doc_key_by_repo_id_file_path(repo_id, file_path, file_id):
     from datetime import datetime
     now = datetime.now()
-    current_timestamp = int(now.timestamp() * 1000)
+    current_timestamp = str(int(now.timestamp() * 1000))
 
     md5 = hashlib.md5(force_bytes(repo_id + file_path + file_id + current_timestamp)).hexdigest()
     logger.info('generate new md5 {} by repo_id {} file_path {} file_id {} current_timestamp {}'.format(md5,
