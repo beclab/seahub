@@ -36,7 +36,7 @@ WORKDIR ../libsearpc
 RUN ./autogen.sh && ./configure && make && sudo make install && sudo ldconfig
 
 WORKDIR ../seafile-server
-RUN git checkout dev && ./autogen.sh && ./configure --disable-fuse && make && sudo make install && sudo ldconfig && rm -rf /root/dev/source-code
+RUN ./autogen.sh && ./configure --disable-fuse && make && sudo make install && sudo ldconfig && rm -rf /root/dev/source-code
 #RUN git checkout pgsql && ./autogen.sh && ./configure --disable-fuse && make && sudo make install && sudo ldconfig && rm -rf /root/dev/source-code
 
 WORKDIR /root/dev/source-code/seahub
