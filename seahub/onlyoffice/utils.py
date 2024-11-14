@@ -35,9 +35,9 @@ def generate_onlyoffice_doc_key(repo_id, file_path, file_id):
     return doc_key
 
 
-def get_doc_key_by_repo_id_file_path(repo_id, file_path):
+def get_doc_key_by_repo_id_file_path(repo_id, file_path, file_id):
 
-    md5 = hashlib.md5(force_bytes(repo_id + file_path)).hexdigest()
+    md5 = hashlib.md5(force_bytes(repo_id + file_path + file_id)).hexdigest()
     try:
         doc_key_obj = OnlyOfficeDocKey.objects.filter(repo_id_file_path_md5=md5).first()
         if doc_key_obj:
@@ -123,8 +123,7 @@ def get_onlyoffice_dict(request, username, repo_id, file_path, file_id='',
     if not can_edit:
         doc_key = generate_onlyoffice_doc_key(origin_repo_id, origin_file_path, file_id)
     else:
-        doc_key = generate_onlyoffice_doc_key(origin_repo_id, origin_file_path, file_id)    # try by wrx
-        # doc_key = get_doc_key_by_repo_id_file_path(origin_repo_id, origin_file_path)
+        doc_key = get_doc_key_by_repo_id_file_path(origin_repo_id, origin_file_path, file_id) # try file_id by wrx
         if doc_key:
             logger.info('get doc_key {} from database by repo_id {} file_path {}'.format(doc_key,
                                                                                          origin_repo_id,
