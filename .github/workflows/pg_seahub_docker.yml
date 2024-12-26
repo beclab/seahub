@@ -7,18 +7,17 @@
 # To get a newer version, you will need to update the SHA.
 # You can also reference a tag or branch, but the action may change without warning.
 
-name: Publish Seahub Backend Docker image
+name: Publish PG-Seahub Docker image
 
 on:
   workflow_dispatch:
-    # before separation, this is the newest
-#  push:
-#    branches:
-#      - main
+  push:
+    branches:
+      - main
       # - pgsql
-#      - dev
-#  release:
-#    types: [published]
+      - dev
+  release:
+    types: [published]
 
 jobs:
   push_to_registry:
@@ -45,14 +44,14 @@ jobs:
         uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
         with:
           # images: ${{ secrets.DOCKER_USERNAME }}/seahub_pgserver
-          images: beclab/seahub_pgserver
+          images: beclab/pg_seahub
 
       - name: Build and push Docker image
         uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
         with:
           context: .
-          file: ./Dockerfile_pgserver
+          file: ./Dockerfile_pg_seahub
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-#          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64,linux/arm64
