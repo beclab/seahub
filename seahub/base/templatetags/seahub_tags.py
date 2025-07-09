@@ -78,9 +78,12 @@ FILEEXT_ICON_MAP = {
     'ogv': 'video.png',
     'webm': 'video.png',
     'mov': 'video.png',
-    'flv': 'video.png',
+    'avi': 'video.png',
     'wmv': 'video.png',
+    'mkv': 'vido.png',
+    'flv': 'video.png',
     'rmvb': 'video.png',
+    'rm': 'video.png',
 
     # music file
     'mp3': 'music.png',

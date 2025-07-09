@@ -29,7 +29,7 @@ SEARCH_FILEEXT = {
     SVG: ('svg',),
     PDF: ('pdf',),
     MARKDOWN: ('markdown', 'md'),
-    VIDEO: ('mp4', 'ogv', 'webm', 'mov'),
+    VIDEO: ('mp4', 'ogv', 'webm', 'mov', 'avi', 'wmv', 'mkv', 'flv', 'rmvb', 'rm'),
     AUDIO: ('mp3', 'oga', 'ogg'),
     '3D': ('stl', 'obj'),
 }

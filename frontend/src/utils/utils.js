@@ -78,9 +78,12 @@ export const Utils = {
     'ogv': 'video.png',
     'webm': 'video.png',
     'mov': 'video.png',
-    'flv': 'video.png',
+    'avi': 'video.png',
     'wmv': 'video.png',
+    'mkv': 'vido.png',
+    'flv': 'video.png',
     'rmvb': 'video.png',
+    'rm': 'video.png',
 
     // music file
     'mp3' : 'music.png',
@@ -193,7 +196,7 @@ export const Utils = {
       return false;
     }
     var file_ext = filename.substr(filename.lastIndexOf('.') + 1).toLowerCase();
-    var exts = ['mp4', 'ogv', 'webm', 'mov'];
+    var exts = ['mp4', 'ogv', 'webm', 'mov', 'avi', 'wmv', 'mkv', 'flv', 'rmvb', 'rm'];
     if (exts.indexOf(file_ext) != -1) {
       return true;
     } else {
